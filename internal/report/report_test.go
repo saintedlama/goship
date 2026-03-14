@@ -1,8 +1,9 @@
 package report
 
 import (
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/saintedlama/goship/internal/coverage"
 	"github.com/saintedlama/goship/internal/tester"
@@ -47,46 +48,30 @@ func singleFailResult() *tester.Results {
 
 func TestBuildMarkdown_PassHeading(t *testing.T) {
 	md := BuildMarkdown(singlePassResult())
-	if !strings.Contains(md, "🔭 Tests") {
-		t.Error("expected 🔭 Tests heading")
-	}
-	if !strings.Contains(md, "2 total") {
-		t.Error("expected \"2 total\" in summary")
-	}
-	if !strings.Contains(md, "2 passed") {
-		t.Error("expected \"2 passed\" in summary")
-	}
+	assert.Contains(t, md, "🔭 Tests")
+	assert.Contains(t, md, "2 total")
+	assert.Contains(t, md, "2 passed")
 }
 
 func TestBuildMarkdown_FailHeading(t *testing.T) {
 	md := BuildMarkdown(singleFailResult())
-	if !strings.Contains(md, "1 failed") {
-		t.Error("expected \"1 failed\" in heading")
-	}
+	assert.Contains(t, md, "1 failed")
 }
 
 func TestBuildMarkdown_PackageTable(t *testing.T) {
 	md := BuildMarkdown(singlePassResult())
-	if !strings.Contains(md, "example.com/foo") {
-		t.Error("expected package name in table")
-	}
+	assert.Contains(t, md, "example.com/foo")
 }
 
 func TestBuildMarkdown_FailedTestDetails(t *testing.T) {
 	md := BuildMarkdown(singleFailResult())
-	if !strings.Contains(md, "TestBad") {
-		t.Error("expected failed test name in details")
-	}
-	if !strings.Contains(md, "expected 1 got 2") {
-		t.Error("expected failure output in details")
-	}
+	assert.Contains(t, md, "TestBad")
+	assert.Contains(t, md, "expected 1 got 2")
 }
 
 func TestBuildMarkdown_NoFailedSection_WhenAllPass(t *testing.T) {
 	md := BuildMarkdown(singlePassResult())
-	if strings.Contains(md, "Failed Tests") {
-		t.Error("did not expect \"Failed Tests\" section when all pass")
-	}
+	assert.NotContains(t, md, "Failed Tests")
 }
 
 func multiPackagePassResult() *tester.Results {
@@ -112,60 +97,42 @@ func multiPackageCoverageResults() *coverage.Results {
 
 func TestBuildMarkdown_CommonRootSubtitle(t *testing.T) {
 	md := BuildMarkdown(multiPackagePassResult())
-	if !strings.Contains(md, "example.com/mymod") {
-		t.Error("expected common root label in output")
-	}
+	assert.Contains(t, md, "example.com/mymod")
 }
 
 func TestBuildMarkdown_StripsPrefix(t *testing.T) {
 	md := BuildMarkdown(multiPackagePassResult())
-	if strings.Contains(md, "`example.com/mymod/foo`") {
-		t.Error("expected full path to be stripped in package table")
-	}
-	if !strings.Contains(md, "`foo`") {
-		t.Error("expected short package name \"foo\" in table")
-	}
+	assert.NotContains(t, md, "`example.com/mymod/foo`")
+	assert.Contains(t, md, "`foo`")
 }
 
 func TestBuildCoverageMarkdown_CommonRootSubtitle(t *testing.T) {
 	md := BuildCoverageMarkdown(multiPackageCoverageResults())
-	if !strings.Contains(md, "example.com/mymod") {
-		t.Error("expected common root label in coverage output")
-	}
+	assert.Contains(t, md, "example.com/mymod")
 }
 
 func TestBuildCoverageMarkdown_StripsPrefix(t *testing.T) {
 	md := BuildCoverageMarkdown(multiPackageCoverageResults())
-	if strings.Contains(md, "`example.com/mymod/foo`") {
-		t.Error("expected full path to be stripped in coverage table")
-	}
-	if !strings.Contains(md, "`foo`") {
-		t.Error("expected short package name \"foo\" in coverage table")
-	}
+	assert.NotContains(t, md, "`example.com/mymod/foo`")
+	assert.Contains(t, md, "`foo`")
 }
 
 func TestCommonRoot_TwoPackages(t *testing.T) {
 	label, prefix := commonRoot([]string{"github.com/foo/bar", "github.com/foo/baz"})
-	if label != "github.com/foo" {
-		t.Errorf("label = %q, want \"github.com/foo\"", label)
-	}
-	if prefix != "github.com/foo/" {
-		t.Errorf("prefix = %q, want \"github.com/foo/\"", prefix)
-	}
+	assert.Equal(t, "github.com/foo", label)
+	assert.Equal(t, "github.com/foo/", prefix)
 }
 
 func TestCommonRoot_SinglePackage(t *testing.T) {
 	label, prefix := commonRoot([]string{"github.com/foo/bar"})
-	if label != "" || prefix != "" {
-		t.Errorf("expected empty strings for single package, got %q %q", label, prefix)
-	}
+	assert.Empty(t, label)
+	assert.Empty(t, prefix)
 }
 
 func TestCommonRoot_NoCommonPrefix(t *testing.T) {
 	label, prefix := commonRoot([]string{"github.com/foo", "gitlab.com/bar"})
-	if label != "" || prefix != "" {
-		t.Errorf("expected empty strings for no common prefix, got %q %q", label, prefix)
-	}
+	assert.Empty(t, label)
+	assert.Empty(t, prefix)
 }
 
 func coverageResults(total float64) *coverage.Results {
@@ -180,36 +147,22 @@ func coverageResults(total float64) *coverage.Results {
 
 func TestBuildCoverageMarkdown_Heading(t *testing.T) {
 	md := BuildCoverageMarkdown(coverageResults(82.5))
-	if !strings.Contains(md, "82.5%") {
-		t.Error("expected total percentage in summary")
-	}
-	if !strings.Contains(md, "Coverage") {
-		t.Error("expected Coverage in heading")
-	}
+	assert.Contains(t, md, "82.5%")
+	assert.Contains(t, md, "Coverage")
 }
 
 func TestBuildCoverageMarkdown_PackageTable(t *testing.T) {
 	md := BuildCoverageMarkdown(coverageResults(72.0))
 	// common prefix "example.com/" is stripped; short names appear in table
-	if !strings.Contains(md, "`foo`") {
-		t.Error("expected short package name 'foo' in table")
-	}
-	if !strings.Contains(md, "`bar`") {
-		t.Error("expected short package name 'bar' in table")
-	}
+	assert.Contains(t, md, "`foo`")
+	assert.Contains(t, md, "`bar`")
 	// the common root should appear as a subtitle
-	if !strings.Contains(md, "example.com") {
-		t.Error("expected common root shown as subtitle")
-	}
+	assert.Contains(t, md, "example.com")
 }
 
 func TestBuildCoverageMarkdown_Icons(t *testing.T) {
 	md := BuildCoverageMarkdown(coverageResults(72.0))
 	// foo is 90% → anchor, bar is 55% → lifebuoy
-	if !strings.Contains(md, "⚓️") {
-		t.Error("expected ⚓️ icon for ≥80% package")
-	}
-	if !strings.Contains(md, "🛟") {
-		t.Error("expected 🛟 icon for <60% package")
-	}
+	assert.Contains(t, md, "⚓️")
+	assert.Contains(t, md, "🛟")
 }

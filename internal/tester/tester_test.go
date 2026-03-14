@@ -3,6 +3,9 @@ package tester
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const passingJSON = `
@@ -31,59 +34,30 @@ const mixedJSON = `
 
 func TestParse_Passing(t *testing.T) {
 	r, err := Parse(strings.NewReader(passingJSON))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got := r.Passed(); got != 1 {
-		t.Errorf("Passed() = %d, want 1", got)
-	}
-	if got := r.Failed(); got != 0 {
-		t.Errorf("Failed() = %d, want 0", got)
-	}
-	if r.HasFailures() {
-		t.Error("HasFailures() = true, want false")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, 1, r.Passed())
+	assert.Equal(t, 0, r.Failed())
+	assert.False(t, r.HasFailures())
 }
 
 func TestParse_Failing(t *testing.T) {
 	r, err := Parse(strings.NewReader(failingJSON))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got := r.Failed(); got != 1 {
-		t.Errorf("Failed() = %d, want 1", got)
-	}
-	if !r.HasFailures() {
-		t.Error("HasFailures() = false, want true")
-	}
-	if len(r.Packages[0].Cases[0].Output) == 0 {
-		t.Error("expected output lines on failed test case")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, 1, r.Failed())
+	assert.True(t, r.HasFailures())
+	assert.NotEmpty(t, r.Packages[0].Cases[0].Output)
 }
 
 func TestParse_Mixed(t *testing.T) {
 	r, err := Parse(strings.NewReader(mixedJSON))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got := r.Passed(); got != 1 {
-		t.Errorf("Passed() = %d, want 1", got)
-	}
-	if got := r.Failed(); got != 1 {
-		t.Errorf("Failed() = %d, want 1", got)
-	}
-	if len(r.Packages) != 1 {
-		t.Errorf("len(Packages) = %d, want 1", len(r.Packages))
-	}
+	require.NoError(t, err)
+	assert.Equal(t, 1, r.Passed())
+	assert.Equal(t, 1, r.Failed())
+	assert.Len(t, r.Packages, 1)
 }
 
 func TestParse_PackageAction(t *testing.T) {
 	r, err := Parse(strings.NewReader(passingJSON))
-	if err != nil {
-		t.Fatal(err)
-	}
-	pkg := r.Packages[0]
-	if pkg.Action != "pass" {
-		t.Errorf("Package.Action = %q, want \"pass\"", pkg.Action)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "pass", r.Packages[0].Action)
 }

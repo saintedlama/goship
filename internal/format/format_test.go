@@ -3,6 +3,9 @@ package format
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const sampleOutput = `internal/foo/foo.go
@@ -11,43 +14,32 @@ internal/bar/bar.go
 
 func TestParse_FileCount(t *testing.T) {
 	r, err := Parse(strings.NewReader(sampleOutput))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(r.Files) != 2 {
-		t.Errorf("got %d files, want 2", len(r.Files))
-	}
+	require.NoError(t, err)
+	assert.Len(t, r.Files, 2)
 }
 
 func TestParse_HasIssues(t *testing.T) {
-	r, _ := Parse(strings.NewReader(sampleOutput))
-	if !r.HasIssues() {
-		t.Error("expected HasIssues() = true")
-	}
+	r, err := Parse(strings.NewReader(sampleOutput))
+	require.NoError(t, err)
+	assert.True(t, r.HasIssues())
 }
 
 func TestParse_FileNames(t *testing.T) {
-	r, _ := Parse(strings.NewReader(sampleOutput))
-	if r.Files[0] != "internal/foo/foo.go" {
-		t.Errorf("got %q, want %q", r.Files[0], "internal/foo/foo.go")
-	}
+	r, err := Parse(strings.NewReader(sampleOutput))
+	require.NoError(t, err)
+	assert.Equal(t, "internal/foo/foo.go", r.Files[0])
 }
 
 func TestParse_Empty(t *testing.T) {
 	r, err := Parse(strings.NewReader(""))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if r.HasIssues() {
-		t.Error("expected no issues for empty output")
-	}
+	require.NoError(t, err)
+	assert.False(t, r.HasIssues())
 }
 
 func TestParse_NotTruncated(t *testing.T) {
-	r, _ := Parse(strings.NewReader(sampleOutput))
-	if r.Truncated {
-		t.Error("expected Truncated = false for 2 files")
-	}
+	r, err := Parse(strings.NewReader(sampleOutput))
+	require.NoError(t, err)
+	assert.False(t, r.Truncated)
 }
 
 func TestParse_Truncated(t *testing.T) {
@@ -56,13 +48,7 @@ func TestParse_Truncated(t *testing.T) {
 		sb.WriteString("internal/pkg/file.go\n")
 	}
 	r, err := Parse(strings.NewReader(sb.String()))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(r.Files) != MaxFindings {
-		t.Errorf("got %d files, want %d", len(r.Files), MaxFindings)
-	}
-	if !r.Truncated {
-		t.Error("expected Truncated = true")
-	}
+	require.NoError(t, err)
+	assert.Len(t, r.Files, MaxFindings)
+	assert.True(t, r.Truncated)
 }
