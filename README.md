@@ -1,12 +1,12 @@
-# GoShip ⚓️
+# GoShip Reporter ⚓️
 
 Bring fun into Go development with GoShip and GitHub Actions!
 
-GoShip runs your Go tests, generates coverage reports, vets your code, and checks formatting — then adds beautiful results to the GitHub step summary. Like a friendly shipmate keeping your code in shipshape condition.
+GoShip Reporter runs your Go tests, generates coverage reports, vets your code, and checks formatting — then adds beautiful results to the GitHub step summary. Like a friendly shipmate keeping your code in shipshape condition.
 
 ## Usage
 
-Add GoShip to your workflow after `actions/checkout`:
+Add GoShip Reporter to your workflow after `actions/checkout`:
 
 ```yaml
 name: CI
@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: GoShip
+      - name: GoShip Reporter
         uses: saintedlama/goship@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -34,7 +34,7 @@ jobs:
 All checks are enabled by default. Disable any you don't need:
 
 ```yaml
-      - name: GoShip
+      - name: GoShip Reporter
         uses: saintedlama/goship@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
