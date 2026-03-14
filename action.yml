@@ -1,11 +1,11 @@
 name: 'goship'
-description: 'Short description of what goship does.'
+description: 'Run Go tests, coverage, vet, and fmt — and add beautiful results to the GitHub step summary.'
 branding:
   icon: 'anchor'
   color: 'blue'
 
 inputs:
-  token:
+  github-token:
     description: 'GitHub token for API access'
     required: false
     default: ${{ github.token }}
@@ -13,14 +13,30 @@ inputs:
     description: 'Working directory for the action'
     required: false
     default: '.'
-
-outputs:
-  result:
-    description: 'Result of the action'
+  test:
+    description: 'Run go test and add results to the step summary'
+    required: false
+    default: 'true'
+  coverage:
+    description: 'Collect coverage and add a coverage report to the step summary'
+    required: false
+    default: 'true'
+  vet:
+    description: 'Run go vet and add results to the step summary; fails the action if issues are found'
+    required: false
+    default: 'true'
+  fmt:
+    description: 'Run gofmt and add results to the step summary; fails the action if files need formatting'
+    required: false
+    default: 'true'
 
 runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
-    GITHUB_TOKEN: ${{ inputs.token }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
     WORKING_DIRECTORY: ${{ inputs.working-directory }}
+    TEST: ${{ inputs.test }}
+    COVERAGE: ${{ inputs.coverage }}
+    VET: ${{ inputs.vet }}
+    FMT: ${{ inputs.fmt }}

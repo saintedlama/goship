@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/saintedlama/goship/internal/action"
@@ -12,21 +11,22 @@ func main() {
 	cfg := action.Config{
 		Token:            getInput("GITHUB_TOKEN"),
 		WorkingDirectory: getInputWithDefault("WORKING_DIRECTORY", "."),
+		Test:             action.ParseBool(getInputWithDefault("TEST", "true")),
+		Coverage:         action.ParseBool(getInputWithDefault("COVERAGE", "true")),
+		Vet:              action.ParseBool(getInputWithDefault("VET", "true")),
+		Fmt:              action.ParseBool(getInputWithDefault("FMT", "true")),
 	}
 
-	result, err := action.Run(cfg)
+	passed, err := action.Run(cfg)
 	if err != nil {
 		writeError(err.Error())
 		os.Exit(1)
 	}
-
-	if err := setOutput("result", result); err != nil {
-		log.Fatalf("failed to set output: %v", err)
+	if !passed {
+		os.Exit(1)
 	}
 }
 
-// getInput reads a GitHub Actions input from the environment.
-// For docker actions the env mapping is declared in action.yml under runs.env.
 func getInput(key string) string {
 	return os.Getenv(key)
 }
@@ -38,11 +38,9 @@ func getInputWithDefault(key, defaultValue string) string {
 	return defaultValue
 }
 
-// setOutput writes an output to $GITHUB_OUTPUT (file-based protocol).
 func setOutput(key, value string) error {
 	outputFile := os.Getenv("GITHUB_OUTPUT")
 	if outputFile == "" {
-		// Fallback for local development / testing.
 		fmt.Printf("::set-output name=%s::%s\n", key, value)
 		return nil
 	}
@@ -55,7 +53,8 @@ func setOutput(key, value string) error {
 	return err
 }
 
-// writeError emits a GitHub Actions error annotation to stderr.
 func writeError(msg string) {
 	fmt.Fprintf(os.Stderr, "::error::%s\n", msg)
 }
+
+var _ = setOutput

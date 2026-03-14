@@ -30,3 +30,6 @@ vendor/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local development files
+out.md
