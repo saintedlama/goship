@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/saintedlama/goship/compare/v1.1.0...v1.2.0) (2026-03-15)
+
+
+### Features
+
+* add improve logging ([1663d8a](https://github.com/saintedlama/goship/commit/1663d8ad6898312c8ac4aa1e25e0597e7fa03323))
+
 ## [1.1.0](https://github.com/saintedlama/goship/compare/v1.0.0...v1.1.0) (2026-03-15)
 
 
