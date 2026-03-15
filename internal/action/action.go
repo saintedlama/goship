@@ -118,6 +118,13 @@ func runTests(cfg Config) (*tester.Results, *coverage.Results, error) {
 	slog.Info("tests completed", "passed", results.Passed(), "failed", results.Failed(), "skipped", results.Skipped())
 	if results.HasFailures() {
 		slog.Warn("some tests failed")
+		for _, pkg := range results.Packages {
+			for _, tc := range pkg.Cases {
+				if tc.Action == "fail" {
+					slog.Warn("test failed", "package", pkg.Name, "test", tc.Name)
+				}
+			}
+		}
 	}
 	if results.BuildError != "" {
 		slog.Error("build error during tests", "buildError", results.BuildError)
@@ -151,7 +158,10 @@ func runVet(cfg Config) (*vet.Results, error) {
 		return nil, fmt.Errorf("run vet: %w", err)
 	}
 	if results.HasIssues() {
-		slog.Warn("vet found issues")
+		slog.Warn("vet found issues", "count", len(results.Findings))
+		for _, f := range results.Findings {
+			slog.Warn("vet finding", "analyzer", f.Analyzer, "location", f.Posn, "message", f.Message)
+		}
 	}
 	if results.BuildError != "" {
 		slog.Error("build error during vet", "buildError", results.BuildError)
@@ -173,7 +183,10 @@ func runFmt(cfg Config) (*format.Results, error) {
 		return nil, fmt.Errorf("run fmt: %w", err)
 	}
 	if results.HasIssues() {
-		slog.Warn("some files need formatting")
+		slog.Warn("files need formatting", "count", len(results.Files))
+		for _, f := range results.Files {
+			slog.Warn("unformatted file", "file", f)
+		}
 	}
 	return results, nil
 }
