@@ -1,6 +1,6 @@
 module github.com/saintedlama/goship
 
-go 1.26
+go 1.27.1
 
 require github.com/stretchr/testify v1.12.1
 
