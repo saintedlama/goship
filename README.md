@@ -68,7 +68,7 @@ GoShip writes a rich Markdown report directly to the GitHub step summary:
 
 ### Prerequisites
 
-- Go 1.26+
+- Go 1.27+
 - Docker (for container builds)
 
 ### Build
